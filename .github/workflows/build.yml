@@ -1,4 +1,4 @@
-name: Build Docker Image
+name: Build and Push Docker Image
 
 on:
   workflow_dispatch:
@@ -39,57 +39,25 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    # 3. 构建 baota:minimal
-    - name: Build minimal image
+    # 3. 构建并推送 baota:minimal 镜像 (支持 amd64 和 arm64)
+    - name: Build and push minimal image
       run: |
-        # GHCR 要求镜像名称全小写，使用 github.repository_owner 替代硬编码的命名空间
         OWNER_LOWER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-        docker build \
+        docker buildx build \
           --platform linux/amd64,linux/arm64 \
           -t ghcr.io/${OWNER_LOWER}/baota:minimal \
           -t ghcr.io/${OWNER_LOWER}/baota:latest \
           -t ghcr.io/${OWNER_LOWER}/baota:minimal-${{ github.event.inputs.image_tag }} \
-          -f ./dockerfiles/dockerfile.baota . || exit 1
+          -f ./dockerfiles/dockerfile.baota . \
+          --push || exit 1
 
-    # 验证 baota:minimal 是否存在
-    - name: Verify minimal image exists
+    # 4. 构建并推送 baota:lnmp 镜像 (支持 amd64 和 arm64)
+    - name: Build and push lnmp image
       run: |
         OWNER_LOWER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-        if ! docker image inspect ghcr.io/${OWNER_LOWER}/baota:minimal > /dev/null 2>&1; then
-            echo "Error: ghcr.io/${OWNER_LOWER}/baota:minimal does not exist!"
-            exit 1
-        fi
-    
-    # 4. 构建 baota:lnmp
-    - name: Build lnmp image
-      run: |
-        OWNER_LOWER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-        docker build \
+        docker buildx build \
           --platform linux/amd64,linux/arm64 \
           -t ghcr.io/${OWNER_LOWER}/baota:lnmp \
           -t ghcr.io/${OWNER_LOWER}/baota:lnmp-${{ github.event.inputs.image_tag }} \
-          -f ./dockerfiles/dockerfile.baota-lnmp . || exit 1
-
-    # 验证 baota:lnmp 是否存在
-    - name: Verify lnmp image exists
-      run: |
-        OWNER_LOWER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-        if ! docker image inspect ghcr.io/${OWNER_LOWER}/baota:lnmp > /dev/null 2>&1; then
-            echo "Error: ghcr.io/${OWNER_LOWER}/baota:lnmp does not exist!"
-            exit 1
-        fi
-           
-    # 5. 推送 minimal image 到 GHCR
-    - name: Push minimal image to GHCR
-      run: |
-        OWNER_LOWER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-        docker push ghcr.io/${OWNER_LOWER}/baota:minimal
-        docker push ghcr.io/${OWNER_LOWER}/baota:latest
-        docker push ghcr.io/${OWNER_LOWER}/baota:minimal-${{ github.event.inputs.image_tag }}
-
-    # 6. 推送 LNMP image 到 GHCR
-    - name: Push LNMP image to GHCR
-      run: |
-        OWNER_LOWER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-        docker push ghcr.io/${OWNER_LOWER}/baota:lnmp
-        docker push ghcr.io/${OWNER_LOWER}/baota:lnmp-${{ github.event.inputs.image_tag }}
+          -f ./dockerfiles/dockerfile.baota-lnmp . \
+          --push || exit 1
