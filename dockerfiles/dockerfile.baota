@@ -94,6 +94,8 @@ RUN echo "${BT_USERNAME}" | bt 6 && echo "${BT_PASSWORD}" | bt 5 && \
     && rm -rf /var/log/* \
     && rm -rf /tmp/* 
 
+# 暴漏特定端口
+EXPOSE 22 80 443 888 3306 8888
 
 STOPSIGNAL SIGRTMIN+3
 ENTRYPOINT ["/usr/local/bin/boot.sh"]
