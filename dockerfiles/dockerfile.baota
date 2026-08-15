@@ -61,11 +61,7 @@ RUN wget -4 --no-check-certificate -O install.sh "${BT_INSTALL_SH_URL}" && \
     rm -rf /var/lib/apt/lists/*
 
 # 第三阶段：启用ipv6 配置宝塔面板和系统设置
-RUN echo "net.ipv6.conf.all.disable_ipv6 = 0" >> /etc/sysctl.conf && \
-    echo "net.ipv6.conf.default.disable_ipv6 = 0" >> /etc/sysctl.conf && \
-    echo "net.ipv6.conf.lo.disable_ipv6 = 0" >> /etc/sysctl.conf && \
-    echo "${BT_USERNAME}" | bt 6 && echo "${BT_PASSWORD}" | bt 5 && \
-    echo '::' > /www/server/panel/data/ipv6.pl && \
+RUN echo "${BT_USERNAME}" | bt 6 && echo "${BT_PASSWORD}" | bt 5 && \
     update-alternatives --set iptables /usr/sbin/iptables-legacy && \
     update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy && \
     sed -i 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
@@ -78,7 +74,7 @@ RUN echo "net.ipv6.conf.all.disable_ipv6 = 0" >> /etc/sysctl.conf && \
     rm -rf /www/reserve_space.pl && \
     tar czf /www_backup.tar.gz -C / www && \
     rm -rf /www && \
-    rm -rf /var/log/* \
+    rm -rf /var/log/* && \
     tar xzf /www_backup.tar.gz -C / \
     && rm -rf /www_backup.tar.gz \
     && cd /www/server/panel/install \
