@@ -79,9 +79,6 @@ RUN echo "${BT_USERNAME}" | bt 6 && echo "${BT_PASSWORD}" | bt 5 && \
     && rm -rf /www_backup.tar.gz \
     && cd /www/server/panel/install \
     && bash install_soft.sh 4 install mysql 5.7 \ 
-    && bash install_soft.sh 0 install nginx 1.24 \ 
-    && bash install_soft.sh 4 install php 8.2 \  
-    && bash install_soft.sh 4 install phpmyadmin 5.1 \ 
     # 压缩删除/www 解决挂载目录时被宿主机覆盖的问题
     && rm -rf /www/reserve_space.pl \
     && rm -rf /www/server/data/ib_logfile* \
